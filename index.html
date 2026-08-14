@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>WPTiers — Rankings</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #111720;
+            --panel-2: #151c27;
+            --panel-3: #1a2230;
+            --border: #252f3d;
+            --text: #f4f6f8;
+            --muted: #8d98a8;
+            --accent: #ffb21c;
+            --accent-2: #ff7a18;
+            --accent-soft: rgba(255, 157, 28, .14);
+            --accent-glow: rgba(255, 145, 20, .28);
+            --green: #54d86a;
+            --red: #ff5b5b;
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: radial-gradient(circle at 50% -10%, rgba(255, 143, 23, .09), transparent 34%), var(--bg);
+            color: var(--text);
+            font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        body { padding: 28px 18px 60px; }
+        a { color: inherit; text-decoration: none; }
+        .app { width: min(1120px, 100%); margin: 0 auto; }
+
+        /* Профильное модальное окно */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, .75);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #0f151e;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 420px;
+            width: 100%;
+            padding: 28px 30px 22px;
+            position: relative;
+            animation: modalIn .3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @keyframes modalIn {
+            from { transform: scale(.92) translateY(16px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px; right: 14px;
+            background: none;
+            border: none;
+            color: #5a6a7a;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: .2s;
+        }
+        .modal-close:hover { color: var(--text); background: rgba(255,255,255,.06); }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .modal-avatar {
+            width: 80px; height: 80px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            overflow: hidden;
+            background: #0d131c;
+            margin-bottom: 8px;
+        }
+        .modal-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .modal-player-name {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text);
+            letter-spacing: -0.3px;
+            margin-bottom: 2px;
+        }
+        .modal-player-title {
+            font-size: 14px;
+            color: #8d98a8;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        .modal-player-title b { color: var(--accent); margin-right: 2px; }
+
+        .modal-special-title-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #4C482C;
+            border-radius: 70px;
+            padding: 6px 20px;
+            margin: 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #F5DB45;
+        }
+        .modal-special-title-badge img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
+        .modal-combat-ace-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #63313E;
+            border-radius: 70px;
+            padding: 6px 20px;
+            margin: 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #EFA5B6;
+        }
+        .modal-combat-ace-badge img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
+        .modal-combat-specialist-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #48435C;
+            border-radius: 70px;
+            padding: 6px 20px;
+            margin: 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #D4C9E6;
+        }
+        .modal-combat-specialist-badge img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
+        .modal-combat-cadet-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #2D3040;
+            border-radius: 70px;
+            padding: 6px 20px;
+            margin: 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #C2ADF0;
+        }
+        .modal-combat-cadet-badge img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
+        .modal-combat-novice-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #2D3040;
+            border-radius: 70px;
+            padding: 6px 20px;
+            margin: 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #C2ADF0;
+        }
+        .modal-combat-novice-badge img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
+        .modal-rookie-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #2D3040;
+            border-radius: 70px;
+            padding: 6px 20px;
+            margin: 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #B0B4B8;
+        }
+        .modal-rookie-badge img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
+
+        .modal-namemc {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #8d98a8;
+            margin-bottom: 12px;
+        }
+        .modal-namemc:hover { color: var(--text); }
+        .modal-rank-box {
+            display: flex;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 8px 0 12px;
+            border: 1px solid var(--border);
+            background: #0c121a;
+        }
+        .modal-rank-left {
+            flex: 0 0 25%;
+            background: linear-gradient(110deg, rgba(255,188,34,.96) 0 62%, rgba(255,119,18,.9) 62% 100%);
+            clip-path: polygon(0 0,92% 0,82% 100%,0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(0,0,0,.4);
+            min-height: 60px;
+        }
+        .modal-rank-left.top1 { background: linear-gradient(110deg, #EFBA3C 0 62%, #d4a030 62% 100%); }
+        .modal-rank-left.top2 { background: linear-gradient(110deg, #879EA5 0 62%, #6f868d 62% 100%); }
+        .modal-rank-left.top3 { background: linear-gradient(110deg, #B56329 0 62%, #9a4f20 62% 100%); }
+        .modal-rank-left.other { background: linear-gradient(110deg, #26303d 0 62%, #1b2430 62% 100%); }
+        .modal-rank-right {
+            flex: 1;
+            padding: 10px 16px;
+            text-align: left;
+        }
+        .modal-rank-overall {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .modal-rank-points {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .modal-tiers {
+            width: 100%;
+            text-align: left;
+            margin-top: 4px;
+        }
+        .modal-tiers-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #5a6a7a;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .modal-tiers-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #0c121a;
+            border: 1px solid #1a2430;
+            border-radius: 8px;
+            min-height: 36px;
+            align-items: center;
+            justify-content: center;
+        }
+        .tier-empty {
+            width: 32px; height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #5a6a7a;
+            background: #0c121a;
+            border-radius: 50%;
+            border: 1px solid #263140;
+        }
+
+        /* INFO DROPDOWN */
+        .info-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 340px;
+            max-width: 480px;
+            background: #0f151e;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px 20px;
+            z-index: 500;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        }
+        .info-dropdown.active { display: block; }
+        .info-dropdown-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .info-dropdown-tab {
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: .2s;
+        }
+        .info-dropdown-tab:hover {
+            color: var(--text);
+            background: rgba(255,255,255,.06);
+        }
+        .info-dropdown-tab.active {
+            color: var(--text);
+            background: var(--accent-soft);
+        }
+        .info-dropdown-content {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .info-dropdown-content.active { display: flex; }
+        .info-title-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            padding: 3px 14px;
+        }
+        .info-title-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-title-top img { width: 20px; height: 20px; object-fit: contain; }
+        .info-title-name { font-size: 14px; font-weight: 700; }
+        .info-title-desc { font-size: 12px; color: var(--muted); }
+
+        .points-tiers-wrapper { display: flex; flex-direction: column; gap: 10px; }
+        .points-tier-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 0 4px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            position: relative;
+        }
+        .points-tier-row:last-child { border-bottom: none; }
+        .points-tier-row::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            border-radius: 2px;
+        }
+        .points-tier-row.line-gold::before { background: #F5DB45; }
+        .points-tier-row.line-silver::before { background: #C8D2E3; }
+        .points-tier-row.line-bronze::before { background: #F6A65D; }
+        .points-tier-row.line-gray::before { background: #B0B4B8; }
+        .points-tier-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            padding-left: 6px;
+        }
+        .points-tier-header img { width: 20px; height: 20px; object-fit: contain; }
+        .points-tier-sub {
+            display: flex;
+            gap: 12px;
+            margin-left: 4px;
+            flex-wrap: wrap;
+        }
+        .points-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 70px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .points-badge.gold { background: #4C482C; color: #F5DB45; }
+        .points-badge.silver { background: #5C6978; color: #C8D2E3; }
+        .points-badge.bronze { background: #6E4F3F; color: #F6A65D; }
+        .points-badge.dark { background: #2D3040; color: #645A77; }
+        .points-badge svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* NAVBAR / TABS / CONTENT */
+        .navbar {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            padding: 0 18px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: rgba(16,22,31,.92);
+            box-shadow: 0 12px 40px rgba(0,0,0,.18);
+        }
+        .logo {
+            font-weight: 950;
+            font-size: 24px;
+            letter-spacing: -1.5px;
+            margin-right: auto;
+            color: var(--accent-2);
+            cursor: default;
+            user-select: none;
+        }
+        .nav-links { display: flex; align-items: center; gap: 8px; }
+        .nav-link {
+            padding: 10px 13px;
+            border-radius: 10px;
+            color: #a7b0bd;
+            font-size: 14px;
+            font-weight: 650;
+            transition: .18s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .nav-link img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .nav-link:hover { color: var(--text); background: var(--accent-soft); }
+        .nav-link.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(255,178,28,.18), rgba(255,122,24,.08));
+            box-shadow: inset 0 -2px 0 var(--accent);
+        }
+        .search {
+            width: 190px;
+            height: 38px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #0d131c;
+            color: var(--text);
+            padding: 0 12px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .search:focus { border-color: rgba(255,178,28,.55); box-shadow: 0 0 0 3px rgba(255,178,28,.08); }
+
+        /* Discord dropdown */
+        .nav-item {
+            position: relative;
+        }
+        .discord-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            padding-top: 10px;
+            z-index: 500;
+        }
+        .nav-item:hover .discord-dropdown {
+            display: block;
+        }
+        .discord-dropdown-inner {
+            background: #0f151e;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            display: flex;
+            gap: 28px;
+        }
+        .discord-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .discord-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #a7b0bd;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: .2s;
+            white-space: nowrap;
+        }
+        .discord-item:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.06);
+        }
+        .discord-item img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .tabs {
+            margin-top: 44px;
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            padding-bottom: 2px;
+        }
+        .tab {
+            min-width: 96px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: 1px solid var(--border);
+            border-bottom-color: transparent;
+            border-radius: 14px 14px 0 0;
+            background: #0f151e;
+            color: #687383;
+            font-size: 13px;
+            font-weight: 750;
+            cursor: pointer;
+            transition: .2s;
+            padding: 0 16px;
+        }
+        .tab:hover { color: #d8dde4; background: #151d2a; }
+        .tab.active {
+            color: #fff;
+            background: linear-gradient(180deg, rgba(255,170,25,.13), #111720);
+            border-color: rgba(255,178,28,.22);
+            box-shadow: inset 0 -2px 0 var(--accent);
+        }
+        .tab-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            margin-right: 2px;
+        }
+        .tab-icon img { width: 100%; height: 100%; object-fit: contain; }
+
+        .content {
+            border: 1px solid var(--border);
+            border-radius: 0 var(--radius) var(--radius) var(--radius);
+            background: linear-gradient(180deg, #111720, #0f151e);
+            overflow: visible;
+        }
+        .toolbar {
+            min-height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            position: relative;
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+        .info-btn {
+            border: 1px solid var(--border);
+            background: #19212d;
+            color: #f2f4f7;
+            border-radius: 9px;
+            padding: 9px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: .2s;
+        }
+        .info-btn:hover { background: #253040; border-color: var(--accent); }
+        .server {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+        .server strong {
+            display: block;
+            color: #dbe0e7;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .overall-card {
+            display: grid;
+            grid-template-columns: auto 1fr 80px auto;
+            align-items: center;
+            gap: 12px;
+            min-height: 72px;
+            margin: 0 10px 6px;
+            border: 1px solid rgba(37,47,61,.85);
+            border-radius: 10px;
+            background: linear-gradient(90deg, #141b25, #111821);
+            transition: transform .16s, border-color .16s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .overall-card:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255,170,25,.32);
+            box-shadow: 0 8px 22px rgba(0,0,0,.2);
+        }
+        .overall-rank {
+            font-size: 18px;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            padding: 10px 28px 10px 16px;
+            background: linear-gradient(110deg, rgba(255,188,34,.96) 0 62%, rgba(255,119,18,.9) 62% 100%);
+            clip-path: polygon(0 0,92% 0,82% 100%,0 100%);
+            text-shadow: 0 0 20px rgba(0,0,0,.4);
+            min-height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 70px;
+        }
+        .overall-rank.top1 { background: linear-gradient(110deg, #EFBA3C 0 62%, #d4a030 62% 100%); }
+        .overall-rank.top2 { background: linear-gradient(110deg, #879EA5 0 62%, #6f868d 62% 100%); }
+        .overall-rank.top3 { background: linear-gradient(110deg, #B56329 0 62%, #9a4f20 62% 100%); }
+        .overall-rank.other { background: linear-gradient(110deg, #26303d 0 62%, #1b2430 62% 100%); }
+
+        .overall-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            padding: 4px 0;
+        }
+        .overall-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            border: 1px solid #303b49;
+            background: linear-gradient(135deg, #34404e, #151b24);
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+        .overall-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .overall-details { min-width: 0; }
+        .overall-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .overall-title {
+            font-size: 12px;
+            color: #7f8c9d;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .overall-title .title-icon { width: 16px; height: 16px; object-fit: contain; }
+        .overall-title b { color: var(--accent); margin-right: 2px; }
+        .overall-title span { color: var(--muted); }
+
+        .overall-region {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            text-align: center;
+        }
+        .overall-region.na { color: #ff6161; background: rgba(255,80,80,.14); }
+        .overall-region.eu { color: #61e47a; background: rgba(68,220,92,.14); }
+
+        .overall-tiers {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            padding: 4px 8px 4px 0;
+        }
+        .tier-pill-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 32px;
+        }
+        .tier-pill {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #0c121a;
+            border: 1px solid #263140;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tier-pill .mode-icon { width: 18px; height: 18px; object-fit: contain; }
+        .tier-label {
+            font-size: 10px;
+            font-weight: 900;
+            text-align: center;
+        }
+        .tier-label.ht1, .tier-label.lt1 { background: #544B30; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.ht2 { background: #5C6978; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.lt2 { background: #424951; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.ht3 { background: #6E4F3F; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.lt3 { background: #5A3B2A; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.ht4 { background: #2F323D; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.lt4 { background: #2D3040; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.ht5 { background: #2F323D; border-radius: 55px; padding: 2px 6px; color: #fff; }
+        .tier-label.lt5 { background: #2D3040; border-radius: 55px; padding: 2px 6px; color: #fff; }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        .tier-column { min-width: 150px; }
+        .tier-header {
+            text-align: center;
+            padding: 10px 0;
+            border-radius: 10px 10px 0 0;
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tier-header.tier1 { background: #41361B; color: #F0B857; }
+        .tier-header.tier2 { background: #343843; color: #A9B1B9; }
+        .tier-header.tier3 { background: #352620; color: #D59161; }
+        .tier-header.tier4 { background: #161E2A; color: #B1C0CC; }
+        .tier-header.tier5 { background: #161E2A; color: #B1C0CC; }
+        .tier-header .tier-icon { width: 24px; height: 24px; object-fit: contain; }
+
+        .tier-player {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            margin-top: 4px;
+            border-radius: 8px;
+            background: #141c28;
+            border: 1px solid #1a2430;
+            cursor: pointer;
+            transition: .2s;
+        }
+        .tier-player:hover {
+            background: #1c2838;
+            border-color: rgba(255,170,25,.32);
+            transform: translateY(-1px);
+        }
+        .tier-player .region-tag {
+            min-width: 28px;
+            height: 24px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: .2s;
+        }
+        .tier-player:hover .region-tag { opacity: 1; min-width: 36px; }
+        .region-tag.na { background: #ff4444; color: #fff; }
+        .region-tag.eu { background: #44bb44; color: #fff; }
+        .tier-player .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #0a0e14;
+            border: 1px solid #2a3340;
+            overflow: hidden;
+        }
+        .tier-player .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .tier-player .player-info-wrapper {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            min-width: 0;
+            gap: 8px;
+        }
+        .tier-player .name {
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            color: #f0f2f5;
+        }
+        .tier-player .tier-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-shrink: 0;
+            opacity: 0.6;
+            margin-left: auto;
+            min-width: 18px;
+        }
+        .tier-player .tier-arrow svg { stroke: #9DA5B2; stroke-width: 2.5; }
+
+        .category-label {
+            padding: 12px 18px;
+            font-size: 14px;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .category-icon-img { width: 20px; height: 20px; }
+        .category-icon-img img { width: 100%; height: 100%; object-fit: contain; }
+        .category-label span { color: var(--accent); font-weight: 800; }
+
+        /* ============================================================
+           ENHANCED ADMIN PANEL DESIGN
+           ============================================================ */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(160deg, #0f151e 0%, #111720 100%);
+            border: 1px solid rgba(255, 178, 28, 0.2);
+            border-radius: 20px;
+            padding: 30px 32px;
+            z-index: 2000;
+            width: 92%;
+            max-width: 850px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 178, 28, 0.05), 0 0 40px rgba(255, 145, 20, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        .admin-panel.active { display: block; animation: adminIn .35s cubic-bezier(.21,1.02,.73,1); }
+        @keyframes adminIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(.92); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .admin-header h2 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffb21c, #ff7a18);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+        .admin-close {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #8d98a8;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .admin-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-color: rgba(255,255,255,0.2);
+            transform: rotate(90deg);
+        }
+        .admin-controls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .admin-controls label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #a7b0bd;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-controls select,
+        .admin-controls input {
+            background: #0d131c;
+            border: 1px solid #252f3d;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .admin-controls select:focus,
+        .admin-controls input:focus {
+            border-color: rgba(255,178,28,0.5);
+            box-shadow: 0 0 0 3px rgba(255,178,28,0.08);
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 8px;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .admin-table th {
+            background: rgba(255,255,255,0.04);
+            color: #c0c8d2;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            vertical-align: middle;
+        }
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+        .admin-table tbody tr {
+            transition: background .15s;
+        }
+        .admin-table tbody tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        .admin-table select,
+        .admin-table input {
+            background: #0a0f15;
+            border: 1px solid #263140;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .admin-table select:focus,
+        .admin-table input:focus {
+            border-color: rgba(255,178,28,0.5);
+        }
+        .admin-btn {
+            background: rgba(255, 178, 28, 0.12);
+            border: 1px solid rgba(255, 178, 28, 0.4);
+            color: #ffb21c;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .admin-btn:hover {
+            background: rgba(255, 178, 28, 0.25);
+            border-color: #ffb21c;
+            box-shadow: 0 4px 12px rgba(255,178,28,0.15);
+        }
+        .admin-btn.danger {
+            background: rgba(255, 91, 91, 0.1);
+            border-color: rgba(255, 91, 91, 0.35);
+            color: #ff5b5b;
+        }
+        .admin-btn.danger:hover {
+            background: rgba(255, 91, 91, 0.2);
+            border-color: #ff5b5b;
+            box-shadow: 0 4px 12px rgba(255,91,91,0.15);
+        }
+        .admin-btn.blacklist {
+            background: rgba(128, 128, 128, 0.15);
+            border-color: rgba(128, 128, 128, 0.4);
+            color: #bbb;
+        }
+        .admin-btn.blacklist:hover {
+            background: rgba(128, 128, 128, 0.25);
+            border-color: #ccc;
+            box-shadow: 0 4px 12px rgba(128,128,128,0.2);
+        }
+        .admin-add-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .admin-add-form input,
+        .admin-add-form select {
+            background: #0d131c;
+            border: 1px solid #252f3d;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .admin-add-form input:focus,
+        .admin-add-form select:focus {
+            border-color: rgba(255,178,28,0.5);
+        }
+        .admin-note {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Новый стиль для групп с тирами в Overall (вертикально) */
+        .tier-select-group {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            margin-right: 12px;
+            margin-bottom: 8px;
+        }
+        .tier-select-group span {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .tier-select-group select {
+            width: 100%;
+            min-width: 80px;
+        }
+
+        /* Admin Password Modal (улучшенный) */
+        .admin-password-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: overlayIn .3s ease;
+        }
+        @keyframes overlayIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .admin-password-modal {
+            background: linear-gradient(165deg, #0c1119 0%, #111720 55%, #0f151e 100%);
+            border: 1px solid rgba(255, 178, 28, 0.25);
+            border-radius: 20px;
+            padding: 28px 32px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 40px rgba(255,145,20,0.08);
+            animation: modalIn .3s ease;
+        }
+        .admin-password-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .admin-password-header .lock-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            background: rgba(255,178,28,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--accent);
+        }
+        .admin-password-modal h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .admin-password-subtitle {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .admin-password-input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .admin-password-input-wrapper input {
+            width: 100%;
+            background: #0a0f15;
+            border: 1px solid #263140;
+            color: #fff;
+            padding: 10px 44px 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .admin-password-input-wrapper input:focus {
+            border-color: rgba(255,178,28,0.5);
+            box-shadow: 0 0 0 3px rgba(255,178,28,0.08);
+        }
+        .admin-password-toggle {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #5a6a7a;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .admin-password-toggle:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+        .admin-password-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .admin-password-actions .admin-btn {
+            flex: 1;
+        }
+
+        ::selection { color: #111; background: var(--accent); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b1017; }
+        ::-webkit-scrollbar-thumb { background: #303b49; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3e4c5d; }
+    </style>
+</head>
+<body>
+    <div class="app">
+
+        <!-- Profile Modal -->
+        <div class="modal-overlay" id="profileModal">
+            <div class="modal">
+                <button class="modal-close" id="closeModal">✕</button>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel" id="adminPanel">
+            <div class="admin-header">
+                <h2>Database Manager</h2>
+                <button class="admin-close" id="adminClose">✕</button>
+            </div>
+            <div class="admin-controls">
+                <label>Category:
+                    <select id="adminCategorySelect">
+                        <option value="overall">Overall</option>
+                        <option value="vanilla">Vanilla</option>
+                        <option value="uhc">UHC</option>
+                        <option value="pot">Pot</option>
+                        <option value="nethop">NethOP</option>
+                        <option value="smp">SMP</option>
+                        <option value="sword">Sword</option>
+                        <option value="axe">Axe</option>
+                        <option value="mace">Mace</option>
+                    </select>
+                </label>
+                <button class="admin-btn" id="adminRefreshBtn">Refresh</button>
+                <button class="admin-btn danger" id="adminDeleteAllBtn">Delete All</button>
+                <button class="admin-btn" id="adminClearStorageBtn">Clear Storage</button>
+                <input type="text" id="adminSearchInput" placeholder="Search player..." style="margin-left:auto; background:#0d131c; border:1px solid #252f3d; color:#fff; padding:8px 12px; border-radius:8px; font-family:inherit; font-size:13px; outline:none;">
+            </div>
+            <table class="admin-table" id="adminTable">
+                <thead><tr id="adminTableHead"></tr></thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+            <div class="admin-add-form" id="adminAddForm"></div>
+            <div class="admin-note">Нажмите Update для сохранения строки. Изменения в категориях автоматически синхронизируются с Overall.</div>
+        </div>
+
+        <!-- Admin Password Modal (улучшенный) -->
+        <div class="admin-password-overlay" id="adminPasswordOverlay" style="display:none;">
+            <div class="admin-password-modal">
+                <div class="admin-password-header">
+                    <div class="lock-icon">🔒</div>
+                    <h3>Admin Access</h3>
+                    <div class="admin-password-subtitle">Введите пароль для входа</div>
+                </div>
+                <div class="admin-password-input-wrapper">
+                    <input type="password" id="adminPasswordInput" placeholder="Пароль">
+                    <button class="admin-password-toggle" id="togglePassword" title="Показать/скрыть пароль">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div class="admin-password-actions">
+                    <button class="admin-btn" id="adminPasswordSubmit">Войти</button>
+                    <button class="admin-btn danger" id="adminPasswordCancel">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header class="navbar">
+            <div class="logo" id="logo">
+                <span style="color:#D69C00;">WP</span><span style="color:#002D5E;">Tiers</span>
+            </div>
+            <nav class="nav-links">
+                <a class="nav-link active" href="#" id="rankingsLink">
+                    <img src="img/rankings.svg" alt="">Rankings
+                </a>
+                <div class="nav-item">
+                    <a class="nav-link" href="#">
+                        <img src="img/discord.svg" alt="">Discords
+                    </a>
+                    <div class="discord-dropdown">
+                        <div class="discord-dropdown-inner">
+                            <div class="discord-column">
+                                <a href="https://discord.gg/HwxeMzSrPW" target="_blank" class="discord-item">
+                                    <img src="img/vanilla.svg" alt="">Vanilla
+                                </a>
+                                <a href="https://discord.gg/QtH6ajRgch" target="_blank" class="discord-item">
+                                    <img src="img/pot.svg" alt="">Pot
+                                </a>
+                                <a href="https://discord.gg/KAhqrgeAbV" target="_blank" class="discord-item">
+                                    <img src="img/smp.svg" alt="">SMP
+                                </a>
+                                <a href="https://discord.gg/qwfNfHzkTr" target="_blank" class="discord-item">
+                                    <img src="img/axe.svg" alt="">Axe
+                                </a>
+                            </div>
+                            <div class="discord-column">
+                                <a href="https://discord.gg/Bx8KyH2Zc8" target="_blank" class="discord-item">
+                                    <img src="img/uhc.svg" alt="">UHC
+                                </a>
+                                <a href="https://discord.gg/bcfptgr9yM" target="_blank" class="discord-item">
+                                    <img src="img/nethop.svg" alt="">NethOP
+                                </a>
+                                <a href="https://discord.gg/GXZm3SZFTH" target="_blank" class="discord-item">
+                                    <img src="img/sword.svg" alt="">Sword
+                                </a>
+                                <a href="https://discord.gg/FWFHDczSt8" target="_blank" class="discord-item">
+                                    <img src="img/mace.svg" alt="">Mace
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <input class="search" type="search" placeholder="Search player..." id="searchInput">
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs" id="tabsContainer">
+            <button class="tab active" data-category="overall"><span class="tab-icon"><img src="img/overall.svg"></span>Overall</button>
+            <button class="tab" data-category="vanilla"><span class="tab-icon"><img src="img/vanilla.svg"></span>Vanilla</button>
+            <button class="tab" data-category="uhc"><span class="tab-icon"><img src="img/uhc.svg"></span>UHC</button>
+            <button class="tab" data-category="pot"><span class="tab-icon"><img src="img/pot.svg"></span>Pot</button>
+            <button class="tab" data-category="nethop"><span class="tab-icon"><img src="img/nethop.svg"></span>NethOP</button>
+            <button class="tab" data-category="smp"><span class="tab-icon"><img src="img/smp.svg"></span>SMP</button>
+            <button class="tab" data-category="sword"><span class="tab-icon"><img src="img/sword.svg"></span>Sword</button>
+            <button class="tab" data-category="axe"><span class="tab-icon"><img src="img/axe.svg"></span>Axe</button>
+            <button class="tab" data-category="mace"><span class="tab-icon"><img src="img/mace.svg"></span>Mace</button>
+        </div>
+
+        <!-- Content -->
+        <main class="content">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <button class="info-btn" id="infoBtn">Information</button>
+                    <div class="info-dropdown" id="infoDropdown">
+                        <div class="info-dropdown-tabs">
+                            <button class="info-dropdown-tab active" data-tab="titles">Titles</button>
+                            <button class="info-dropdown-tab" data-tab="points">Points</button>
+                        </div>
+                        <div class="info-dropdown-content active" id="infoTabTitles"></div>
+                        <div class="info-dropdown-content" id="infoTabPoints">
+                            <div class="points-tiers-wrapper">
+                                <div class="points-tier-row line-gold">
+                                    <div class="points-tier-header"><img src="img/tier_1.svg" onerror="this.style.display='none'"> Tier 1</div>
+                                    <div class="points-tier-sub">
+                                        <span class="points-badge gold"><svg viewBox="0 0 24 24"><path d="M6 18l6-6 6 6"/><path d="M6 12l6-6 6 6"/></svg> 60 Points</span>
+                                        <span class="points-badge gold"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg> 45 Points</span>
+                                    </div>
+                                </div>
+                                <div class="points-tier-row line-silver">
+                                    <div class="points-tier-header"><img src="img/tier_2.svg" onerror="this.style.display='none'"> Tier 2</div>
+                                    <div class="points-tier-sub">
+                                        <span class="points-badge silver"><svg viewBox="0 0 24 24"><path d="M6 18l6-6 6 6"/><path d="M6 12l6-6 6 6"/></svg> 30 Points</span>
+                                        <span class="points-badge silver"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg> 20 Points</span>
+                                    </div>
+                                </div>
+                                <div class="points-tier-row line-bronze">
+                                    <div class="points-tier-header"><img src="img/tier_3.svg" onerror="this.style.display='none'"> Tier 3</div>
+                                    <div class="points-tier-sub">
+                                        <span class="points-badge bronze"><svg viewBox="0 0 24 24"><path d="M6 18l6-6 6 6"/><path d="M6 12l6-6 6 6"/></svg> 10 Points</span>
+                                        <span class="points-badge bronze"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg> 6 Points</span>
+                                    </div>
+                                </div>
+                                <div class="points-tier-row line-gray">
+                                    <div class="points-tier-header" style="color: #B0B4B8;">Tier 4</div>
+                                    <div class="points-tier-sub">
+                                        <span class="points-badge dark"><svg viewBox="0 0 24 24"><path d="M6 18l6-6 6 6"/><path d="M6 12l6-6 6 6"/></svg> 4 Points</span>
+                                        <span class="points-badge dark"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg> 3 Points</span>
+                                    </div>
+                                </div>
+                                <div class="points-tier-row line-gray">
+                                    <div class="points-tier-header" style="color: #B0B4B8;">Tier 5</div>
+                                    <div class="points-tier-sub">
+                                        <span class="points-badge dark"><svg viewBox="0 0 24 24"><path d="M6 18l6-6 6 6"/><path d="M6 12l6-6 6 6"/></svg> 2 Points</span>
+                                        <span class="points-badge dark"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg> 1 Points</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <span style="font-size:12px;color:var(--muted);" id="playerCount">0 players</span>
+                </div>
+                <div class="server">
+                    <span>SERVER IP</span>
+                    <div><strong>mcpvp.club</strong></div>
+                </div>
+            </div>
+
+            <div class="category-label" id="categoryLabel">
+                <div class="category-icon-img"><img src="img/overall.svg" id="categoryIconImg"></div>
+                Currently viewing: <span id="currentCategoryName">Overall</span>
+            </div>
+
+            <section id="rankings"></section>
+        </main>
+    </div>
+
+    <script>
+        // ============================================================
+        //  DATABASE
+        // ============================================================
+        var CATEGORIES = {
+            overall: {
+                label: "Overall",
+                icon: "img/overall.svg",
+                players: [
+                    { name: "Marlowww", region: "NA", title: "Combat Grandmaster", points: 450, position: 1, tiers: ["HT1","HT1","","HT1","HT1","HT1","","HT1"] },
+                    { name: "TestEmpty", region: "EU", title: "Combat Ace", points: 100, position: 2, tiers: ["","","","","","","",""] },
+                    { name: "SpecialistTest", region: "NA", title: "Combat Specialist", points: 200, position: 3, tiers: ["HT2","HT2","HT2","HT2","HT2","HT2","HT2","HT2"] },
+                    { name: "CadetTest", region: "EU", title: "Combat Cadet", points: 150, position: 4, tiers: ["LT1","LT1","LT1","LT1","LT1","LT1","LT1","LT1"] }
+                ]
+            },
+            vanilla: { label: "Vanilla", icon: "img/vanilla.svg", players: [
+                { name: "K1RBE", region: "EU", tierCode: "HT1" },
+                { name: "cloudmlol", region: "NA", tierCode: "LT1" },
+                { name: "Vortex_HD", region: "EU", tierCode: "HT2" }
+            ]},
+            uhc: { label: "UHC", icon: "img/uhc.svg", players: [
+                { name: "GalleryWalk", region: "NA", tierCode: "HT2" },
+                { name: "SnowzyMC", region: "EU", tierCode: "LT2" },
+                { name: "UHC_Pro", region: "NA", tierCode: "HT3" }
+            ]},
+            pot: { label: "Pot", icon: "img/pot.svg", players: [
+                { name: "PotKing", region: "EU", tierCode: "HT3" },
+                { name: "BrewMaster", region: "NA", tierCode: "LT3" },
+                { name: "PotionGod", region: "EU", tierCode: "HT4" }
+            ]},
+            nethop: { label: "NethOP", icon: "img/nethop.svg", players: [
+                { name: "NetherLord", region: "NA", tierCode: "HT4" },
+                { name: "Hoppers", region: "EU", tierCode: "LT4" },
+                { name: "Neth_Player", region: "NA", tierCode: "HT5" }
+            ]},
+            smp: { label: "SMP", icon: "img/smp.svg", players: [
+                { name: "BuilderBob", region: "EU", tierCode: "HT5" },
+                { name: "RedstoneRex", region: "NA", tierCode: "LT5" },
+                { name: "SurvivalSam", region: "EU", tierCode: "HT1" }
+            ]},
+            sword: { label: "Sword", icon: "img/sword.svg", players: [
+                { name: "SwordMaster", region: "NA", tierCode: "HT1" },
+                { name: "BladeRunner", region: "EU", tierCode: "HT2" },
+                { name: "Sharpness", region: "NA", tierCode: "LT2" }
+            ]},
+            axe: { label: "Axe", icon: "img/axe.svg", players: [
+                { name: "AxeWielder", region: "EU", tierCode: "HT3" },
+                { name: "Chopper", region: "NA", tierCode: "LT3" },
+                { name: "Berserker", region: "EU", tierCode: "HT4" }
+            ]},
+            mace: { label: "Mace", icon: "img/mace.svg", players: [
+                { name: "MaceUser", region: "NA", tierCode: "HT5" },
+                { name: "HeavyHitter", region: "EU", tierCode: "LT1" },
+                { name: "CrushingBlow", region: "NA", tierCode: "HT2" }
+            ]}
+        };
+
+        var TITLE_ICONS = {
+            "Combat Grandmaster": "img/combat_grandmaster.webp",
+            "Combat Master": "img/combat_master.webp",
+            "Combat Ace": "img/combat_ace.webp",
+            "Combat Specialist": "img/combat_specialist.svg",
+            "Combat Cadet": "img/combat_cadet.svg",
+            "Combat Novice": "img/combat_novice.svg",
+            "Rookie": "img/rookie.svg"
+        };
+        var TIER_ICONS = { 1: "img/tier_1.svg", 2: "img/tier_2.svg", 3: "img/tier_3.svg" };
+
+        // ============================================================
+        //  STORAGE
+        // ============================================================
+        function loadData() {
+            var saved = localStorage.getItem('beehive_categories_v13');
+            if (saved) {
+                try { return JSON.parse(saved); }
+                catch(e) { console.warn('Parse error, using defaults'); }
+            }
+            return JSON.parse(JSON.stringify(CATEGORIES));
+        }
+        function saveData(data) {
+            localStorage.setItem('beehive_categories_v13', JSON.stringify(data));
+        }
+        function clearStorage() {
+            localStorage.removeItem('beehive_categories_v13');
+            location.reload();
+        }
+
+        // ============================================================
+        //  PROFILE MODAL
+        // ============================================================
+        var modalOverlay = document.getElementById('profileModal');
+        var modalContent = document.getElementById('modalContent');
+        var closeModalBtn = document.getElementById('closeModal');
+
+        function openModal(player, categoryKey, position) {
+            var isOverall = categoryKey === 'overall';
+            var overallPlayer = null;
+            var overallPosition = null;
+
+            var overallPlayers = categoriesData.overall.players;
+            for (var i = 0; i < overallPlayers.length; i++) {
+                if (overallPlayers[i].name.toLowerCase() === player.name.toLowerCase()) {
+                    overallPlayer = overallPlayers[i];
+                    break;
+                }
+            }
+
+            if (overallPlayer) {
+                if (overallPlayer.position === 100000) {
+                    overallPosition = 100000;
+                } else {
+                    var sorted = overallPlayers.slice().sort(function(a, b) {
+                        if (a.position === 100000 && b.position !== 100000) return 1;
+                        if (a.position !== 100000 && b.position === 100000) return -1;
+                        return b.points - a.points;
+                    });
+                    for (var j = 0; j < sorted.length; j++) {
+                        if (sorted[j].name.toLowerCase() === player.name.toLowerCase()) {
+                            overallPosition = j + 1;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            var displayPlayer = overallPlayer || { name: player.name, title: 'Unranked', points: 0, tiers: ['','','','','','','',''] };
+            var displayPosition = overallPosition || null;
+
+            var modes = ["img/sword.svg","img/axe.svg","img/mace.svg","img/pot.svg","img/uhc.svg","img/vanilla.svg","img/nethop.svg","img/smp.svg"];
+
+            var tiersHtml = '';
+            if (displayPlayer.tiers && displayPlayer.tiers.length > 0) {
+                for (var i = 0; i < modes.length; i++) {
+                    var tierValue = displayPlayer.tiers[i];
+                    if (!tierValue) {
+                        tiersHtml += '<div class="tier-pill-wrapper"><div class="tier-empty">—</div><span class="tier-label" style="opacity:0.3;">—</span></div>';
+                    } else {
+                        var tierClass = tierValue.toLowerCase();
+                        tiersHtml += '<div class="tier-pill-wrapper"><div class="tier-pill ' + tierClass + '"><img src="' + modes[i] + '" alt="mode" class="mode-icon" onerror="this.outerHTML=\'—\'"></div><span class="tier-label ' + tierClass + '">' + tierValue + '</span></div>';
+                    }
+                }
+            } else {
+                tiersHtml = '<span style="font-size:13px;color:var(--muted);font-weight:600;">No Overall data</span>';
+            }
+
+            var title = displayPlayer.title || '';
+            var titleIcon = TITLE_ICONS[title] || '';
+            var isSpecial = (title === 'Combat Grandmaster' || title === 'Combat Master');
+            var isAce = (title === 'Combat Ace');
+            var isSpecialist = (title === 'Combat Specialist');
+            var isCadet = (title === 'Combat Cadet');
+            var isNovice = (title === 'Combat Novice');
+            var isRookie = (title === 'Rookie');
+
+            var titleHtml = '';
+            if (isSpecial) {
+                titleHtml = '<div class="modal-special-title-badge"><img src="' + titleIcon + '" onerror="this.style.display=\'none\'">' + title + '</div>';
+            } else if (isAce) {
+                titleHtml = '<div class="modal-combat-ace-badge"><img src="' + titleIcon + '" onerror="this.style.display=\'none\'">' + title + '</div>';
+            } else if (isSpecialist) {
+                titleHtml = '<div class="modal-combat-specialist-badge"><img src="' + titleIcon + '" onerror="this.style.display=\'none\'">' + title + '</div>';
+            } else if (isCadet) {
+                titleHtml = '<div class="modal-combat-cadet-badge"><img src="' + titleIcon + '" onerror="this.style.display=\'none\'">' + title + '</div>';
+            } else if (isNovice) {
+                titleHtml = '<div class="modal-combat-novice-badge"><img src="' + titleIcon + '" onerror="this.style.display=\'none\'">' + title + '</div>';
+            } else if (isRookie) {
+                titleHtml = '<div class="modal-rookie-badge"><img src="' + titleIcon + '" onerror="this.style.display=\'none\'">' + title + '</div>';
+            } else {
+                var color = (title === 'Unranked') ? 'var(--muted)' : '';
+                titleHtml = '<div class="modal-player-title"' + (color ? ' style="color:'+color+';"' : '') + '><b></b>' + title + '</div>';
+            }
+
+            var rankClass = 'other';
+            var posNum = displayPosition !== null ? parseInt(displayPosition, 10) : 0;
+            if (posNum === 1) rankClass = 'top1';
+            else if (posNum === 2) rankClass = 'top2';
+            else if (posNum === 3) rankClass = 'top3';
+
+            var rankHtml = '<div class="modal-rank-box">' +
+                '<div class="modal-rank-left ' + rankClass + '">' + (posNum === 0 ? '—' : posNum) + '</div>' +
+                '<div class="modal-rank-right">' +
+                    '<div class="modal-rank-overall">OVERALL</div>' +
+                    '<div class="modal-rank-points">' + displayPlayer.points + ' points</div>' +
+                '</div>' +
+            '</div>';
+
+            modalContent.innerHTML =
+                '<div class="modal-content">' +
+                '<div class="modal-avatar"><img src="https://mc-heads.net/avatar/' + encodeURIComponent(displayPlayer.name) + '" alt="' + displayPlayer.name + '" onerror="this.parentElement.textContent=\'🧑\'"></div>' +
+                '<div class="modal-player-name">' + displayPlayer.name + '</div>' +
+                titleHtml +
+                rankHtml +
+                '<a href="https://namemc.com/profile/' + encodeURIComponent(displayPlayer.name) + '" target="_blank" class="modal-namemc">NameMC <span class="namemc-arrow">›</span></a>' +
+                '<div class="modal-tiers"><div class="modal-tiers-label">TIERS</div><div class="modal-tiers-box">' + tiersHtml + '</div></div>' +
+                '</div>';
+
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) closeModal(); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+        closeModalBtn.addEventListener('click', closeModal);
+
+        // ============================================================
+        //  INFO DROPDOWN
+        // ============================================================
+        var infoBtn = document.getElementById('infoBtn');
+        var infoDropdown = document.getElementById('infoDropdown');
+        var infoTabTitles = document.getElementById('infoTabTitles');
+        var infoTabs = document.querySelectorAll('.info-dropdown-tab');
+
+        function renderTitles() {
+            var titlesData = [
+                { title: "Combat Grandmaster", icon: TITLE_ICONS["Combat Grandmaster"], color: "#F5DB45", desc: "Obtained 400+ total points." },
+                { title: "Combat Master", icon: TITLE_ICONS["Combat Master"], color: "#F5DB45", desc: "Obtained 250+ total points." },
+                { title: "Combat Ace", icon: TITLE_ICONS["Combat Ace"], color: "#EFA5B6", desc: "Obtained 100+ total points." },
+                { title: "Combat Specialist", icon: TITLE_ICONS["Combat Specialist"], color: "#D4C9E6", desc: "Obtained 50+ total points." },
+                { title: "Combat Cadet", icon: TITLE_ICONS["Combat Cadet"], color: "#C2ADF0", desc: "Obtained 20+ total points." },
+                { title: "Combat Novice", icon: TITLE_ICONS["Combat Novice"], color: "#C2ADF0", desc: "Obtained 10+ total points." },
+                { title: "Rookie", icon: TITLE_ICONS["Rookie"], color: "#B0B4B8", desc: "Starting rank for players with less than 10 points." }
+            ];
+            var html = '';
+            for (var i = 0; i < titlesData.length; i++) {
+                var t = titlesData[i];
+                html += '<div class="info-title-item">' +
+                    '<div class="info-title-top">' +
+                        '<img src="' + t.icon + '" alt="' + t.title + '" onerror="this.style.display=\'none\'">' +
+                        '<span class="info-title-name" style="color:' + t.color + ';">' + t.title + '</span>' +
+                    '</div>' +
+                    '<div class="info-title-desc">' + t.desc + '</div>' +
+                '</div>';
+            }
+            infoTabTitles.innerHTML = html;
+        }
+
+        function switchInfoTab(tabId) {
+            infoTabs.forEach(function(tab) {
+                tab.classList.toggle('active', tab.dataset.tab === tabId);
+            });
+            document.querySelectorAll('.info-dropdown-content').forEach(function(content) {
+                content.classList.toggle('active', content.id === 'infoTab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+            });
+        }
+
+        infoTabs.forEach(function(tab) {
+            tab.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var tabId = this.dataset.tab;
+                switchInfoTab(tabId);
+            });
+        });
+
+        infoBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            infoDropdown.classList.toggle('active');
+            if (infoDropdown.classList.contains('active')) renderTitles();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!infoDropdown.contains(e.target) && e.target !== infoBtn) infoDropdown.classList.remove('active');
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') infoDropdown.classList.remove('active');
+        });
+
+        // ============================================================
+        //  RENDER
+        // ============================================================
+        var currentCategory = 'overall';
+        var categoriesData = {};
+
+        function getTierLevel(code) {
+            if (!code) return 0;
+            var match = code.match(/\d+/);
+            return match ? parseInt(match[0], 10) : 0;
+        }
+
+        function isHighTier(code) {
+            return code && code.toUpperCase().startsWith('HT');
+        }
+
+        function renderRankings(categoryKey) {
+            var container = document.getElementById('rankings');
+            container.innerHTML = '';
+            var category = categoriesData[categoryKey];
+            if (!category || !category.players) return;
+            var players = category.players.slice();
+            document.getElementById('playerCount').textContent = players.length + ' players';
+            document.getElementById('categoryIconImg').src = category.icon;
+            document.getElementById('currentCategoryName').textContent = category.label;
+
+            var infoBtnEl = document.getElementById('infoBtn');
+            if (categoryKey === 'overall') {
+                infoBtnEl.style.display = '';
+            } else {
+                infoBtnEl.style.display = 'none';
+                infoDropdown.classList.remove('active');
+            }
+
+            var isOverall = categoryKey === 'overall';
+
+            if (isOverall) {
+                players.sort(function(a, b) {
+                    if (a.position === 100000 && b.position !== 100000) return 1;
+                    if (a.position !== 100000 && b.position === 100000) return -1;
+                    return b.points - a.points;
+                });
+                var modes = ["img/sword.svg","img/axe.svg","img/mace.svg","img/pot.svg","img/uhc.svg","img/vanilla.svg","img/nethop.svg","img/smp.svg"];
+
+                for (var i = 0; i < players.length; i++) {
+                    var player = players[i];
+                    var pos = i + 1;
+                    var card = document.createElement('div');
+                    card.className = 'overall-card';
+                    card.addEventListener('click', (function(p, pos) { return function() { openModal(p, categoryKey, pos); }; })(player, pos));
+
+                    var rankDiv = document.createElement('div');
+                    rankDiv.className = 'overall-rank';
+                    if (player.position === 100000) {
+                        rankDiv.classList.add('other');
+                        rankDiv.textContent = '100000.';
+                    } else {
+                        if (pos === 1) rankDiv.classList.add('top1');
+                        else if (pos === 2) rankDiv.classList.add('top2');
+                        else if (pos === 3) rankDiv.classList.add('top3');
+                        else rankDiv.classList.add('other');
+                        rankDiv.textContent = pos + '.';
+                    }
+
+                    var titleIcon = TITLE_ICONS[player.title] || 'img/default-title.svg';
+                    var playerDiv = document.createElement('div');
+                    playerDiv.className = 'overall-player';
+                    playerDiv.innerHTML =
+                        '<div class="overall-avatar"><img src="https://mc-heads.net/avatar/' + encodeURIComponent(player.name) + '" alt="' + player.name + '" loading="lazy" onerror="this.parentElement.textContent=\'🧑\'"></div>' +
+                        '<div class="overall-details">' +
+                        '<div class="overall-name">' + player.name + '</div>' +
+                        '<div class="overall-title"><img src="' + titleIcon + '" alt="' + player.title + '" class="title-icon" onerror="this.style.display=\'none\'"><b></b>' + player.title + ' <span>(' + player.points + ' points)</span></div>' +
+                        '</div>';
+
+                    var regionDiv = document.createElement('div');
+                    regionDiv.className = 'overall-region ' + player.region.toLowerCase();
+                    regionDiv.textContent = player.region.toUpperCase();
+
+                    var tiersDiv = document.createElement('div');
+                    tiersDiv.className = 'overall-tiers';
+                    var playerTiers = player.tiers || [];
+                    for (var m = 0; m < modes.length; m++) {
+                        var wrapper = document.createElement('div');
+                        wrapper.className = 'tier-pill-wrapper';
+                        var tierValue = playerTiers[m];
+                        if (!tierValue) {
+                            wrapper.innerHTML = '<div class="tier-empty">—</div><span class="tier-label" style="opacity:0.3;">—</span>';
+                        } else {
+                            var tierClass = tierValue.toLowerCase();
+                            wrapper.innerHTML =
+                                '<div class="tier-pill ' + tierClass + '">' +
+                                '<img src="' + modes[m] + '" alt="mode" class="mode-icon" onerror="this.outerHTML=\'—\'">' +
+                                '</div>' +
+                                '<span class="tier-label ' + tierClass + '">' + tierValue + '</span>';
+                        }
+                        tiersDiv.appendChild(wrapper);
+                    }
+
+                    card.appendChild(rankDiv);
+                    card.appendChild(playerDiv);
+                    card.appendChild(regionDiv);
+                    card.appendChild(tiersDiv);
+                    container.appendChild(card);
+                }
+            } else {
+                var groups = {1:[],2:[],3:[],4:[],5:[]};
+                players.forEach(function(p) {
+                    var level = getTierLevel(p.tierCode);
+                    if (level >= 1 && level <= 5) groups[level].push(p);
+                });
+
+                var grid = document.createElement('div');
+                grid.className = 'category-grid';
+                for (var t = 1; t <= 5; t++) {
+                    var col = document.createElement('div');
+                    col.className = 'tier-column';
+                    var header = document.createElement('div');
+                    header.className = 'tier-header tier' + t;
+                    if (t <= 3) {
+                        var icon = document.createElement('img');
+                        icon.className = 'tier-icon';
+                        icon.src = TIER_ICONS[t] || 'img/tier' + t + '.svg';
+                        header.appendChild(icon);
+                    }
+                    header.appendChild(document.createTextNode('Tier ' + t));
+                    col.appendChild(header);
+
+                    var list = groups[t] || [];
+                    if (list.length === 0) {
+                        var empty = document.createElement('div');
+                        empty.className = 'tier-player';
+                        empty.style.cssText = 'opacity:0.3;justify-content:center;color:#5a6a7a;font-size:11px;';
+                        empty.textContent = '—';
+                        col.appendChild(empty);
+                    } else {
+                        list.sort(function(a, b) { return a.name.localeCompare(b.name); });
+                        list.forEach(function(player) {
+                            var row = document.createElement('div');
+                            row.className = 'tier-player';
+                            row.addEventListener('click', (function(p) { return function() { openModal(p, categoryKey, ''); }; })(player));
+
+                            var arrowHtml = '';
+                            if (player.tierCode) {
+                                if (isHighTier(player.tierCode)) {
+                                    arrowHtml = '<div class="tier-arrow"><svg viewBox="0 0 24 24"><path d="M6 18l6-6 6 6"/><path d="M6 12l6-6 6 6"/></svg></div>';
+                                } else {
+                                    arrowHtml = '<div class="tier-arrow"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></div>';
+                                }
+                            }
+
+                            var regionTag = document.createElement('span');
+                            regionTag.className = 'region-tag ' + player.region.toLowerCase();
+                            regionTag.textContent = player.region.toUpperCase();
+
+                            var avatar = document.createElement('div');
+                            avatar.className = 'avatar';
+                            avatar.innerHTML = '<img src="https://mc-heads.net/avatar/' + encodeURIComponent(player.name) + '" alt="' + player.name + '" loading="lazy" onerror="this.parentElement.textContent=\'🧑\'">';
+
+                            var nameSpan = document.createElement('span');
+                            nameSpan.className = 'name';
+                            nameSpan.textContent = player.name;
+
+                            var infoWrapper = document.createElement('div');
+                            infoWrapper.className = 'player-info-wrapper';
+                            infoWrapper.appendChild(regionTag);
+                            infoWrapper.appendChild(avatar);
+                            infoWrapper.appendChild(nameSpan);
+
+                            row.appendChild(infoWrapper);
+                            if (arrowHtml) row.insertAdjacentHTML('beforeend', arrowHtml);
+                            col.appendChild(row);
+                        });
+                    }
+                    grid.appendChild(col);
+                }
+                container.appendChild(grid);
+            }
+        }
+
+        // ============================================================
+        //  SEARCH (для основной страницы)
+        // ============================================================
+        function searchPlayers(query) {
+            var q = query.toLowerCase().trim();
+            var cards = document.querySelectorAll('.overall-card');
+            var tierPlayers = document.querySelectorAll('.tier-player');
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                var nameEl = card.querySelector('.overall-name');
+                var name = nameEl ? nameEl.textContent.toLowerCase() : '';
+                card.style.display = (q === '' || name.indexOf(q) !== -1) ? '' : 'none';
+            }
+            for (var i = 0; i < tierPlayers.length; i++) {
+                var player = tierPlayers[i];
+                var nameEl = player.querySelector('.name');
+                var name = nameEl ? nameEl.textContent.toLowerCase() : '';
+                player.style.display = (q === '' || name.indexOf(q) !== -1) ? '' : 'none';
+            }
+            var columns = document.querySelectorAll('.tier-column');
+            for (var i = 0; i < columns.length; i++) {
+                var col = columns[i];
+                var visiblePlayers = col.querySelectorAll('.tier-player[style*="display: none"]');
+                var totalPlayers = col.querySelectorAll('.tier-player');
+                if (totalPlayers.length > 0 && visiblePlayers.length === totalPlayers.length) {
+                    col.style.display = 'none';
+                } else {
+                    col.style.display = '';
+                }
+            }
+        }
+
+        // ============================================================
+        //  SYNC FROM CATEGORY TO OVERALL
+        // ============================================================
+        function syncTierFromCategoryToOverall(catKey, playerName, tierCode) {
+            var categoryOrder = ["sword", "axe", "mace", "pot", "uhc", "vanilla", "nethop", "smp"];
+            var tierIndex = categoryOrder.indexOf(catKey);
+            if (tierIndex === -1) return;
+
+            var overallPlayers = categoriesData.overall.players;
+            for (var i = 0; i < overallPlayers.length; i++) {
+                if (overallPlayers[i].name.toLowerCase() === playerName.toLowerCase()) {
+                    var overallPlayer = overallPlayers[i];
+                    if (!overallPlayer.tiers || overallPlayer.tiers.length < 8) {
+                        var newTiers = new Array(8).fill('');
+                        if (overallPlayer.tiers) {
+                            for (var j = 0; j < overallPlayer.tiers.length; j++) {
+                                newTiers[j] = overallPlayer.tiers[j] || '';
+                            }
+                        }
+                        overallPlayer.tiers = newTiers;
+                    }
+                    overallPlayer.tiers[tierIndex] = tierCode || '';
+                    break;
+                }
+            }
+        }
+
+        // ============================================================
+        //  BLACKLIST FUNCTION
+        // ============================================================
+        function blacklistPlayer(playerName) {
+            // Сброс в Overall
+            if (categoriesData.overall && categoriesData.overall.players) {
+                for (var i = 0; i < categoriesData.overall.players.length; i++) {
+                    if (categoriesData.overall.players[i].name.toLowerCase() === playerName.toLowerCase()) {
+                        categoriesData.overall.players[i].points = 0;
+                        categoriesData.overall.players[i].tiers = ['','','','','','','',''];
+                        categoriesData.overall.players[i].position = 100000;
+                        break;
+                    }
+                }
+            }
+            // Сброс во всех категориях
+            for (var catKey in categoriesData) {
+                if (catKey === 'overall') continue;
+                var cat = categoriesData[catKey];
+                if (cat && cat.players) {
+                    for (var j = 0; j < cat.players.length; j++) {
+                        if (cat.players[j].name.toLowerCase() === playerName.toLowerCase()) {
+                            cat.players[j].tierCode = '';
+                            break;
+                        }
+                    }
+                }
+            }
+            saveData(categoriesData);
+            renderAdminTable();
+            renderRankings(currentCategory);
+        }
+
+        // ============================================================
+        //  ADMIN PANEL
+        // ============================================================
+        var adminPanel = document.getElementById('adminPanel');
+        var adminCatSelect = document.getElementById('adminCategorySelect');
+        var adminTableBody = document.getElementById('adminTableBody');
+        var adminTableHead = document.getElementById('adminTableHead');
+        var adminAddForm = document.getElementById('adminAddForm');
+        var adminRefreshBtn = document.getElementById('adminRefreshBtn');
+        var adminDeleteAllBtn = document.getElementById('adminDeleteAllBtn');
+        var adminClose = document.getElementById('adminClose');
+        var adminClearStorageBtn = document.getElementById('adminClearStorageBtn');
+        var isAdminOpen = false;
+        var ADMIN_PASSWORD = "FuckDanloadLox12345";
+
+        function toggleAdmin() {
+            if (isAdminOpen) {
+                adminPanel.classList.remove('active');
+                isAdminOpen = false;
+                return;
+            }
+            var overlay = document.getElementById('adminPasswordOverlay');
+            var input = document.getElementById('adminPasswordInput');
+            input.value = '';
+            overlay.style.display = 'flex';
+            input.focus();
+        }
+
+        function handleAdminPasswordSubmit() {
+            var pw = document.getElementById('adminPasswordInput').value;
+            if (pw === ADMIN_PASSWORD) {
+                document.getElementById('adminPasswordOverlay').style.display = 'none';
+                adminPanel.classList.add('active');
+                isAdminOpen = true;
+                renderAdminTable();
+            } else {
+                alert('Неверный пароль!');
+            }
+        }
+
+        function handleAdminPasswordCancel() {
+            document.getElementById('adminPasswordOverlay').style.display = 'none';
+        }
+
+        function togglePasswordVisibility() {
+            var input = document.getElementById('adminPasswordInput');
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+
+        var logo = document.getElementById('logo');
+        var clickCnt = 0, clickTimer;
+        logo.addEventListener('click', function() {
+            clickCnt++;
+            if (clickCnt === 3) {
+                clearTimeout(clickTimer);
+                clickCnt = 0;
+                toggleAdmin();
+            } else {
+                clearTimeout(clickTimer);
+                clickTimer = setTimeout(function() { clickCnt = 0; }, 500);
+            }
+        });
+
+        adminClose.addEventListener('click', function() { adminPanel.classList.remove('active'); isAdminOpen = false; });
+        adminCatSelect.addEventListener('change', renderAdminTable);
+        adminRefreshBtn.addEventListener('click', renderAdminTable);
+        adminDeleteAllBtn.addEventListener('click', function() {
+            var cat = adminCatSelect.value;
+            if (confirm('Delete ALL players in ' + cat + '?')) {
+                categoriesData[cat].players = [];
+                saveData(categoriesData);
+                renderAdminTable();
+                renderRankings(currentCategory);
+            }
+        });
+        adminClearStorageBtn.addEventListener('click', function() {
+            if (confirm('Clear localStorage and reload?')) {
+                clearStorage();
+            }
+        });
+
+        function updatePlayerFromRow(row, catKey) {
+            var cat = categoriesData[catKey];
+            if (!cat) return;
+            var idx = parseInt(row.dataset.index);
+            var player = cat.players[idx];
+            if (!player) {
+                alert('Player not found at index ' + idx);
+                return;
+            }
+
+            player.name = row.querySelector('.edit-name').value.trim();
+            player.region = row.querySelector('.edit-region').value;
+            if (catKey === 'overall') {
+                player.title = row.querySelector('.edit-title').value.trim();
+                player.points = parseInt(row.querySelector('.edit-points').value) || 0;
+                player.tiers = Array.from(row.querySelectorAll('.edit-tier')).map(function(s) { return s.value; });
+            } else {
+                player.tierCode = row.querySelector('.edit-tierCode').value;
+                syncTierFromCategoryToOverall(catKey, player.name, player.tierCode);
+            }
+            saveData(categoriesData);
+            renderRankings(currentCategory); // Перерисовываем текущую категорию (если Overall, то обновится карточка)
+        }
+
+        function renderAdminTable() {
+            var catKey = adminCatSelect.value;
+            var cat = categoriesData[catKey];
+            if (!cat) return;
+            var isOverall = catKey === 'overall';
+            adminTableHead.innerHTML = isOverall ?
+                '<th>Name</th><th>Region</th><th>Title</th><th>Points</th><th>Tiers (8)</th><th>Actions</th>' :
+                '<th>Name</th><th>Region</th><th>Tier Code</th><th>Actions</th>';
+
+            var html = '';
+            cat.players.forEach(function(p, idx) {
+                html += '<tr data-index="' + idx + '">';
+                html += '<td><input class="edit-name" value="' + p.name + '"></td>';
+                html += '<td><select class="edit-region"><option value="NA" ' + (p.region === 'NA' ? 'selected' : '') + '>NA</option><option value="EU" ' + (p.region === 'EU' ? 'selected' : '') + '>EU</option></select></td>';
+                if (isOverall) {
+                    html += '<td><input class="edit-title" value="' + (p.title || '') + '"></td>';
+                    html += '<td><input class="edit-points" type="number" value="' + (p.points || 0) + '" style="width:70px"></td>';
+                    html += '<td>';
+                    var categoryLabels = ['Sword', 'Axe', 'Mace', 'Pot', 'UHC', 'Vanilla', 'NethOP', 'SMP'];
+                    var opts = ['HT1','HT2','HT3','HT4','HT5','LT1','LT2','LT3','LT4','LT5'];
+                    (p.tiers || []).forEach(function(tv, i) {
+                        html += '<div class="tier-select-group">';
+                        html += '<span>' + categoryLabels[i] + ':</span>';
+                        html += '<select class="edit-tier"><option value="" ' + (tv === '' ? 'selected' : '') + '>—</option>';
+                        opts.forEach(function(o) {
+                            html += '<option value="' + o + '" ' + (tv === o ? 'selected' : '') + '>' + o + '</option>';
+                        });
+                        html += '</select>';
+                        html += '</div>';
+                    });
+                    html += '</td>';
+                } else {
+                    var codes = ['', 'HT1','HT2','HT3','HT4','HT5','LT1','LT2','LT3','LT4','LT5'];
+                    html += '<td><select class="edit-tierCode">';
+                    codes.forEach(function(c) {
+                        html += '<option value="' + c + '" ' + ((p.tierCode || '') === c ? 'selected' : '') + '>' + (c || '— (none)') + '</option>';
+                    });
+                    html += '</select></td>';
+                }
+                html += '<td><button class="admin-btn save-btn">Update</button><button class="admin-btn danger delete-btn">Delete</button><button class="admin-btn blacklist-btn">BlackList</button></td>';
+                html += '</tr>';
+            });
+            adminTableBody.innerHTML = html;
+
+            adminAddForm.innerHTML = isOverall ?
+                '<strong>Add:</strong> <input id="newName" placeholder="Name"> <select id="newRegion"><option>NA</option><option>EU</option></select> <input id="newTitle" placeholder="Title"> <input id="newPoints" type="number" value="0"> <button class="admin-btn" id="addPlayerBtn">Add</button>' :
+                '<strong>Add:</strong> <input id="newName" placeholder="Name"> <select id="newRegion"><option>NA</option><option>EU</option></select> <select id="newTierCode"><option value="">—</option><option value="HT1">HT1</option><option value="HT2">HT2</option><option value="HT3">HT3</option><option value="HT4">HT4</option><option value="HT5">HT5</option><option value="LT1">LT1</option><option value="LT2">LT2</option><option value="LT3">LT3</option><option value="LT4">LT4</option><option value="LT5">LT5</option></select> <button class="admin-btn" id="addPlayerBtn">Add</button>';
+
+            // Добавляем автоматическое сохранение при изменении select/input (без alert)
+            document.querySelectorAll('#adminTableBody tr').forEach(function(row) {
+                row.querySelectorAll('select, input').forEach(function(input) {
+                    input.addEventListener('change', function() {
+                        updatePlayerFromRow(row, catKey);
+                    });
+                    if (input.tagName === 'INPUT') {
+                        input.addEventListener('input', function() {
+                            updatePlayerFromRow(row, catKey);
+                        });
+                    }
+                });
+
+                row.querySelector('.save-btn').addEventListener('click', function() {
+                    updatePlayerFromRow(row, catKey);
+                });
+
+                row.querySelector('.delete-btn').addEventListener('click', function() {
+                    var idx = parseInt(row.dataset.index);
+                    var playerName = cat.players[idx].name;
+                    if (confirm('Delete?')) {
+                        cat.players.splice(idx, 1);
+                        saveData(categoriesData);
+                        if (catKey !== 'overall') {
+                            syncTierFromCategoryToOverall(catKey, playerName, '');
+                        }
+                        renderAdminTable();
+                        renderRankings(currentCategory);
+                    }
+                });
+
+                row.querySelector('.blacklist-btn').addEventListener('click', function() {
+                    var idx = parseInt(row.dataset.index);
+                    var playerName = cat.players[idx].name;
+                    if (confirm('BlackList ' + playerName + '? Это сбросит все очки и тиры.')) {
+                        blacklistPlayer(playerName);
+                    }
+                });
+            });
+
+            var addBtn = document.getElementById('addPlayerBtn');
+            if (addBtn) {
+                addBtn.onclick = function() {
+                    var name = document.getElementById('newName').value.trim();
+                    if (!name) return;
+                    var region = document.getElementById('newRegion').value;
+                    if (isOverall) {
+                        var title = document.getElementById('newTitle').value.trim() || 'Rookie';
+                        var points = parseInt(document.getElementById('newPoints').value) || 0;
+                        cat.players.push({ name: name, region: region, title: title, points: points, tiers: ['','','','','','','',''] });
+                    } else {
+                        var code = document.getElementById('newTierCode').value;
+                        cat.players.push({ name: name, region: region, tierCode: code });
+                        syncTierFromCategoryToOverall(catKey, name, code);
+                    }
+                    saveData(categoriesData);
+                    renderAdminTable();
+                    renderRankings(currentCategory);
+                };
+            }
+        }
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        function switchCategory(cat) {
+            if (currentCategory === cat) return;
+            currentCategory = cat;
+            document.querySelectorAll('.tab').forEach(function(t) {
+                t.classList.toggle('active', t.dataset.category === cat);
+            });
+            renderRankings(cat);
+            document.getElementById('searchInput').value = '';
+            searchPlayers('');
+        }
+
+        function init() {
+            categoriesData = loadData();
+            renderRankings('overall');
+            document.querySelectorAll('.tab').forEach(function(tab) {
+                tab.addEventListener('click', function() { switchCategory(tab.dataset.category); });
+            });
+            document.getElementById('searchInput').addEventListener('input', function(e) { searchPlayers(e.target.value); });
+            document.getElementById('rankingsLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                switchCategory('overall');
+            });
+            document.getElementById('adminPasswordSubmit').addEventListener('click', handleAdminPasswordSubmit);
+            document.getElementById('adminPasswordCancel').addEventListener('click', handleAdminPasswordCancel);
+            document.getElementById('adminPasswordOverlay').addEventListener('click', function(e) {
+                if (e.target === this) handleAdminPasswordCancel();
+            });
+            document.getElementById('adminPasswordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleAdminPasswordSubmit();
+            });
+            document.getElementById('togglePassword').addEventListener('click', togglePasswordVisibility);
+
+            // Фильтрация строк в админ-таблице
+            document.addEventListener('input', function(e) {
+                if (e.target && e.target.id === 'adminSearchInput') {
+                    var q = e.target.value.toLowerCase().trim();
+                    document.querySelectorAll('#adminTableBody tr').forEach(function(row) {
+                        var nameInput = row.querySelector('.edit-name');
+                        var name = nameInput ? nameInput.value.toLowerCase() : '';
+                        row.style.display = (q === '' || name.indexOf(q) !== -1) ? '' : 'none';
+                    });
+                }
+            });
+
+            setInterval(function() { saveData(categoriesData); }, 5000);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+/* ===== PROFILE CONTENT ===== */
+.modal-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #0d131c;
+  margin-bottom: 8px;
+}
+
+.tab-icon {
+    display: inline-block;
+    width: 24px;      /* Ширина иконки */
+    height: 24px;     /* Высота иконки */
+    margin-right: 8px; /* Отступ от картинки до текста */
+    vertical-align: middle;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Подключаем файлы для каждой кнопки */
+.tabs[data-category="overall"] .tab-icon {
+    background-image: url('img/overall.svg'); /* Путь к вашему файлу */
+}
+.tabs[data-category="vanilla"] .tab-icon {
+    background-image: url('img/vanilla.svg');
+}
+.tabs[data-category="uhc"] .tab-icon {
+    background-image: url('img/uhc.svg');
+}
+.tabs[data-category="pot"] .tab-icon {
+    background-image: url('img/pot.svg');
+}
+.tabs[data-category="nethop"] .tab-icon {
+    background-image: url('img/nethop.svg'); /* Путь к вашему файлу */
+}
+.tabs[data-category="smp"] .tab-icon {
+    background-image: url('img/smp.svg');
+}
+.tabs[data-category="sword"] .tab-icon {
+    background-image: url('img/sword.svg');
+}
+.tabs[data-category="axe"] .tab-icon {
+    background-image: url('img/axe.svg');
+}
+.tabs[data-category="mace"] .tab-icon {
+    background-image: url('img/mace.svg');
+}
+
+/* Обновленные стили для тиров в Overall */
+.tier-pill {
+  width: 32px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 7px;
+  background: #0c121a;
+  border: 1px solid #263140;
+}
+
+.tier-pill .mode {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.tier-pill small {
+  font-size: 8px;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+/* Новые цвета для тиров */
+.tier-pill.ht1 small,
+.tier-pill.lt1 small { color: #E5B93D; }
+
+.tier-pill.ht2 small,
+.tier-pill.lt2 small { color: #C8D2E3; }
+
+.tier-pill.ht3 small,
+.tier-pill.lt3 small { color: #F6A65D; }
+
+.tier-pill.ht4 small,
+.tier-pill.lt4 small { color: #645A77; }
+
+.tier-pill.ht5 small,
+.tier-pill.lt5 small { color: #645A77; }
+
+.tier-pill.empty { opacity: .3; }
+
+.tier-pill img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.tier-pill .mode-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
